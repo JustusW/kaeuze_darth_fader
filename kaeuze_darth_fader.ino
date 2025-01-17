@@ -104,9 +104,10 @@ void readFader() {
 }
 
 /* Update the button state and send corresponding MIDI messages.
-   - The button is updated using Bounce library.
-   - If a falling edge (button press) is detected, a Note On message is sent.
-   - If a rising edge (button release) is detected, a Note Off message is sent.
+   The button is updated using Bounce library. If a falling edge
+   (button press) is detected, a Note On message is sent. If a 
+   rising edge (button release) is detected, a Note Off message 
+   is sent.
 */
 void btn_update(Bounce *btn, int note) {
   btn->update();  // Update the state of the button
@@ -159,7 +160,7 @@ void loop() {
   btn_update(&btn_topmiddle, MIDI_NOTE_UNUSED1);
   btn_update(&btn_topleft,   MIDI_NOTE_PREVIOUS);
 
-  readFader();  // Continuously read the fader
+  readFader();  // Read the fader
 
   // Ensure MIDI interface is working by reading any incoming messages
   while (usbMIDI.read()) {}
