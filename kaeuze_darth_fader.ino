@@ -128,6 +128,7 @@ void setup() {
 }
 
 void loop() {
+  // Mapping buttons to MIDI Notes.
   btn_update(&btn_play,      MIDI_NOTE_PLAY);
   btn_update(&btn_stop,      MIDI_NOTE_STOP);
   btn_update(&btn_pause,     MIDI_NOTE_PAUSE);
@@ -137,5 +138,6 @@ void loop() {
 
   readFader();
 
+  // Required for the MIDI interface to work.
   while (usbMIDI.read()) {}
 }
