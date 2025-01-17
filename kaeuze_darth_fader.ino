@@ -74,6 +74,7 @@ void calibrate_fader (int16_t val) {
     EEPROM.put(ADR_EEPROM_CALIBRATION_LOW, low); // Store new low value in EEPROM
   }
 }
+
 /* Read Fader state and send any updates via MIDI.
    First we set the out-pin to high, to have a value to read.
    A delay is provided for the value to stabilize. After
