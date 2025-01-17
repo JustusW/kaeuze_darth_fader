@@ -48,6 +48,14 @@ int16_t high;
 
 int16_t old_val;
 
+
+/* Calibrate the fader with the given current value.
+    Attempts to update the EEPROM value if either low or
+    high calibration target is changed.
+    Note: EEPROM.put will not do superfluous writes 
+    if no value change, but we still try to call it 
+    conservatively.
+*/
 void calibrate_fader (int16_t val) {
   if (val > high) {
     high = val;
@@ -59,6 +67,15 @@ void calibrate_fader (int16_t val) {
   }
 }
 
+/* Read Fader state and send any updates via MIDI.
+    First we set the out-pin to high, to have a value to read.
+    A delay is provided for the value to stabilize. After
+    reading the current analog value (10bit, 0-1024) the
+    output is deactivated, calibration is updated if necessary,
+    and then the value is mapped to the range provided by
+    MIDI_FADER_MIN and MIDI_FADER_MAX. An Offset is then 
+    applied to guarantee full range availability in the SCS.
+*/
 void readFader() {
   digitalWrite(PIN_FADER_OUT, HIGH);
   delay(10);
@@ -70,13 +87,16 @@ void readFader() {
   val = map(val, low, high, MIDI_FADER_MIN - FADER_CALIBRATION_OFFSET_LOW, MIDI_FADER_MAX + FADER_CALIBRATION_OFFSET_HIGH);
   val = min(val, MIDI_FADER_MAX);
   val = max(val, MIDI_FADER_MIN);
-  
+
   if ( val != old_val ) {
     usbMIDI.sendControlChange(MIDI_FADER_CHANNEL, val, MIDI_OUTPUT_CHANNEL);
   }
   old_val = val;
 }
 
+/* Calls Bounce.update() and then determine whether a falling or rising 
+    Edge was detected and send either ON or OFF accordingly.
+*/
 void btn_update(Bounce *btn, int note) {
   btn->update();
 
