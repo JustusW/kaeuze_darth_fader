@@ -14,6 +14,8 @@
 #define MIDI_NOTE_PLAY      65
 
 #define MIDI_FADER_CHANNEL  10
+#define MIDI_FADER_MAX      127
+#define MIDI_FADER_MIN      0
 
 #define PIN_BTN_STOP        0
 #define PIN_BTN_PAUSE       1
@@ -27,8 +29,11 @@
 
 #define BTN_DEBOUNCE_TIME   50
 
-#define ADR_EEPROM_CALIBRATION_LOW  10
-#define ADR_EEPROM_CALIBRATION_HIGH 20
+#define ADR_EEPROM_CALIBRATION_LOW    10
+#define ADR_EEPROM_CALIBRATION_HIGH   20
+
+#define FADER_CALIBRATION_OFFSET_LOW  5
+#define FADER_CALIBRATION_OFFSET_HIGH 5
 
 
 Bounce btn_play       = Bounce(PIN_BTN_PLAY, BTN_DEBOUNCE_TIME);
@@ -62,7 +67,10 @@ void readFader() {
 
   calibrate_fader(val);
   
-  val = map(val, low, high, 0, 127);
+  val = map(val, low, high, MIDI_FADER_MIN - FADER_CALIBRATION_OFFSET_LOW, MIDI_FADER_MAX + FADER_CALIBRATION_OFFSET_HIGH);
+  val = min(val, MIDI_FADER_MAX);
+  val = max(val, MIDI_FADER_MIN);
+  
   if ( val != old_val ) {
     usbMIDI.sendControlChange(MIDI_FADER_CHANNEL, val, MIDI_OUTPUT_CHANNEL);
   }
