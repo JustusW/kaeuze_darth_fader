@@ -54,8 +54,12 @@ Bounce btn_topleft    = Bounce(PIN_BTN_TOPLEFT, BTN_DEBOUNCE_TIME);
 int16_t low;
 int16_t high;
 
-// Variable to store the previous fader value
-int16_t old_val;
+// Rate limit tracking
+unsigned long lastMillis = 0;
+int maxRateChange = 15; // Maximum change allowed per 5ms
+int currentVal = 0;     // Current fader value sent to MIDI
+int lastSentVal = 0;    // Last fader value sent via MIDI
+
 
 /* Calibrate the fader with the given current value.
    Attempts to update the EEPROM value if either low or
@@ -96,12 +100,28 @@ void readFader() {
   val = map(val, low, high, MIDI_FADER_MIN - FADER_CALIBRATION_OFFSET_LOW, MIDI_FADER_MAX + FADER_CALIBRATION_OFFSET_HIGH);
   val = min(val, MIDI_FADER_MAX);  // Ensure the value is within max range
   val = max(val, MIDI_FADER_MIN);  // Ensure the value is within min range
+  // Throttling the rate of change of the fader value
+  unsigned long currentMillis = millis();
+  
+  // Check if enough time has passed
+  if (currentMillis - lastMillis >= 5) {
+    lastMillis = currentMillis;  // Update lastMillis to the current time
 
-  // Send MIDI control change if the fader value has changed
-  if (val != old_val) {
-    usbMIDI.sendControlChange(MIDI_FADER_CHANNEL, val, MIDI_OUTPUT_CHANNEL);
+    // Calculate the difference between the new value and the last sent value
+    int delta = val - lastSentVal;
+
+    // If the difference exceeds the maxRateChange, limit the change
+    if (abs(delta) > maxRateChange) {
+      // If the change is too large, clamp it to maxRateChange
+      val = lastSentVal + (delta > 0 ? maxRateChange : -maxRateChange);
+    }
+
+    // Send MIDI control change if the fader value has changed
+    if (val != lastSentVal) {
+      usbMIDI.sendControlChange(MIDI_FADER_CHANNEL, val, MIDI_OUTPUT_CHANNEL);
+      lastSentVal = val;  // Update last sent value
+    }
   }
-  old_val = val;  // Update the previous value
 }
 
 /* Update the button state and send corresponding MIDI messages.
