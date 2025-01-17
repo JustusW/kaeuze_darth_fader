@@ -109,22 +109,27 @@ void btn_update(Bounce *btn, int note) {
 }
 
 void setup_fader() {
+  pinMode(PIN_FADER_OUT, OUTPUT);
+
   EEPROM.get(ADR_EEPROM_CALIBRATION_LOW, low);
   EEPROM.get(ADR_EEPROM_CALIBRATION_HIGH, high);
 }
 
-void setup() {
-  setup_fader();
-
+void setup_btn() {
   pinMode(PIN_BTN_STOP, INPUT_PULLUP);
   pinMode(PIN_BTN_PAUSE, INPUT_PULLUP);
   pinMode(PIN_BTN_TOPRIGHT, INPUT_PULLUP);
   pinMode(PIN_BTN_TOPMIDDLE, INPUT_PULLUP);
   pinMode(PIN_BTN_TOPLEFT, INPUT_PULLUP);
   pinMode(PIN_BTN_PLAY, INPUT_PULLUP);
+}
 
-  pinMode(PIN_FADER_OUT, OUTPUT);
-  Serial.begin(9600);
+void setup() {
+  setup_fader();
+
+  setup_btn()
+
+  Serial.begin(115200);
 }
 
 void loop() {
